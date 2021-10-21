@@ -1,0 +1,18 @@
+{
+	"source": "UE",
+	"applications": [
+		{
+			"app_key": "application.generated.ue.vr_fundamental-17155196.ue4editor.exe",
+			"launch_type": "url",
+			"url": "steam://launch/",
+			"action_manifest_path": "C:/Users/Chokomaru/Desktop/Unreal_Projects/VR_Fundamental/Config/SteamVRBindings/steamvr_manifest.json",
+			"strings":
+			{
+				"en_us":
+				{
+					"name": "VR_Fundamental-17155196 [UE Editor]"
+				}
+			}
+		}
+	]
+}
