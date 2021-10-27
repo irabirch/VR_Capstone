@@ -12,10 +12,12 @@
 #include "Materials/MaterialInstanceDynamic.h"	//Need this to add blinkers to character instead of world
 #include "MotionControllerComponent.h" //Need this to add oculus controllers to game
 #include "Kismet/GameplayStatics.h"
+#include "Components/SplineComponent.h"	//Need this for spline component for TeleportPath
 
 // Sets default values
 AVRCharacter::AVRCharacter()
 {
+	
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -35,6 +37,9 @@ AVRCharacter::AVRCharacter()
 	RightController->SetupAttachment(VRRoot);
 	RightController->SetTrackingSource(EControllerHand::Right);	//necessary to set up which hand it is
 	RightController->bDisplayDeviceModel = true;	//sets contoller to be visible
+
+	TeleportPath = CreateDefaultSubobject<USplineComponent>(TEXT("TeleportPath")); //Create a teleport position component
+	TeleportPath->SetupAttachment(RightController);	//attach componenet to the VRRoot
 
 	DestinationMarker = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DestinationMarker")); //Create a teleport position component
 	DestinationMarker->SetupAttachment(GetRootComponent());	//attach componenet to the VRRoot
@@ -77,7 +82,7 @@ void AVRCharacter::Tick(float DeltaTime)
 }
 
 //Detects if LineTrace is successful && ProjectPointToNavigation is successful, Then returns true
-bool AVRCharacter::FindTeleportDestination(FVector& OutLocation) 
+bool AVRCharacter::FindTeleportDestination(TArray<FVector>& OutPath, FVector& OutLocation)
 {
 	FVector Start = RightController->GetComponentLocation();	//Sets start of linetracesingle as right controller component location
 	FVector Look = RightController->GetForwardVector();	//Look Variable is an FVector set to forward vector of right controller
@@ -114,6 +119,10 @@ bool AVRCharacter::FindTeleportDestination(FVector& OutLocation)
 
 	if (!bHit) return false;
 
+	for (FPredictProjectilePathPointData PointData : Result.PathData) {	//Spline Points along the path of FPredictProjectilePathPointData
+		OutPath.Add(PointData.Location);
+	}
+
 	/*bool ProjectPointToNavigation
 	(
 		const FVector & Point,
@@ -143,19 +152,33 @@ bool LineTraceSingleByObjectType
 ) const*/
 void AVRCharacter::UpdateDestinationMarker()
 {
+	TArray<FVector> Path;	//TAarray of FVectors dictating the path of the spline
 	FVector Location;
-	bool bHasDestination = FindTeleportDestination(Location);
+	bool bHasDestination = FindTeleportDestination(Path, Location);
 
 	if (bHasDestination)//Sets Location of Dest Mark and its visibilty if bOnNavMesh and bHit are true
 	{
 		DestinationMarker->SetVisibility(true);
 
 		DestinationMarker->SetWorldLocation(Location);	//Destination Marker location is set to worldlocation @ NavLocation
+
+		UpdateSpline(Path);	//When bHasDestination is true, Spline Updates
 	}
 	else
 	{
 		DestinationMarker->SetVisibility(false);	//if bHit is false, meaning if linetrace doesn't hit anything then DM is invisible
 	}
+}
+
+void AVRCharacter::UpdateSpline(const TArray<FVector>& Path) {
+	TeleportPath->ClearSplinePoints(false);
+	for (int32 i = 0; i < Path.Num(); ++i) {
+		FVector LocalPosition = TeleportPath->GetComponentTransform().InverseTransformPosition(Path[i]);	//fixes where the spline is to be not from world location but from local position
+		FSplinePoint Point(i, LocalPosition, ESplinePointType::Curve);	//Point Variable: used to dictate what kind of spline is made
+		TeleportPath->AddPoint(Point, false);	//Creates a spline path making a new node along the path
+	}
+
+	TeleportPath->UpdateSpline();
 }
 
 void AVRCharacter::UpdateBlinkers()
