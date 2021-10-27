@@ -27,9 +27,10 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:									//Function for componenets Instantiation
-	bool FindTeleportDestination(FVector &OutLocation);
+	bool FindTeleportDestination(TArray<FVector> &OutPath, FVector &OutLocation);
 	void UpdateDestinationMarker();
 	void UpdateBlinkers();
+	void UpdateSpline(const TArray<FVector>& Path);	//make const so don't have to make copies of objects
 	FVector2D GetBlinkerCentre();
 
 	void MoveForward(float throttle);
@@ -52,6 +53,8 @@ private:	//Component Instantiations
 		class UMotionControllerComponent* RightController;
 	UPROPERTY(VisibleAnywhere)
 		class USceneComponent* VRRoot;
+	UPROPERTY(VisibleAnywhere)
+		class USplineComponent* TeleportPath;
 	UPROPERTY(VisibleAnywhere)
 		class UStaticMeshComponent* DestinationMarker;
 	UPROPERTY(VisibleAnywhere)
