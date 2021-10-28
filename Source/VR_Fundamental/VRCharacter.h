@@ -30,6 +30,7 @@ private:									//Function for componenets Instantiation
 	bool FindTeleportDestination(TArray<FVector> &OutPath, FVector &OutLocation);
 	void UpdateDestinationMarker();
 	void UpdateBlinkers();
+	void DrawTeleportPath(const TArray<FVector>& Path);
 	void UpdateSpline(const TArray<FVector>& Path);	//make const so don't have to make copies of objects
 	FVector2D GetBlinkerCentre();
 
@@ -46,11 +47,10 @@ private:									//Function for componenets Instantiation
 private:	//Component Instantiations
 	UPROPERTY(VisibleAnywhere)
 		class UCameraComponent* Camera;
-	//class UMotionControllerComponent : public UPrimitiveComponent "this just shows why we put class befor U...* name
 	UPROPERTY(VisibleAnywhere)
-		class UMotionControllerComponent* LeftController;
+		class AHandController* LeftController;
 	UPROPERTY(VisibleAnywhere)
-		class UMotionControllerComponent* RightController;
+		class AHandController* RightController;
 	UPROPERTY(VisibleAnywhere)
 		class USceneComponent* VRRoot;
 	UPROPERTY(VisibleAnywhere)
@@ -61,12 +61,12 @@ private:	//Component Instantiations
 		class UPostProcessComponent* PostProcessComponent;
 	UPROPERTY(VisibleAnywhere)
 		class UMaterialInstanceDynamic* BlinkerMaterialInstance;
+	UPROPERTY(VisibleAnywhere)
+		TArray<class USplineMeshComponent*> TeleportPathMeshPool;
 	
 
+private:	//Configuration Parameters
 
-private:	//Private Variables that are edit anywhere
-	//UPROPERTY(EditAnywhere)
-	//	float MaxTeleportDistance = 1000;	//10 meters as max tele
 	UPROPERTY(EditAnywhere)
 		float TeleportProjectileRadius = 10;	//Param for Projectile Path
 	UPROPERTY(EditAnywhere)
@@ -81,4 +81,10 @@ private:	//Private Variables that are edit anywhere
 		class UMaterialInterface* BlinkerMaterialBase;	//Blinker Matieral Base is the Parent of the Blinker Material Instance
 	UPROPERTY(EditAnywhere)
 		class UCurveFloat* RadiusVsVelocity;	//Becomes radius of blinker when moving
+	UPROPERTY(EditDefaultsOnly)
+		class UStaticMesh* TeleportArchMesh;
+	UPROPERTY(EditDefaultsOnly)
+		class UMaterialInterface* TeleportArchMaterial;
+	UPROPERTY(EditDefaultsOnly)
+		TSubclassOf<AHandController> HandControllerClass;
 };
