@@ -21,7 +21,6 @@ AVRCharacter::AVRCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	//"You can view your componenets by looking at your VRCharacter's Details pane in Unreal Engine
 	VRRoot = CreateDefaultSubobject<USceneComponent>(TEXT("VRRoot")); //Create inherited component VRRoot which will function as the place where our camera is away from
 	VRRoot->SetupAttachment(GetRootComponent());
 
@@ -34,7 +33,7 @@ AVRCharacter::AVRCharacter()
 	DestinationMarker = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DestinationMarker")); //Create a teleport position component
 	DestinationMarker->SetupAttachment(GetRootComponent());	//attach componenet to the VRRoot
 
-	PostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(TEXT("PostProcessComponent")); //Create a teleport position component
+	PostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(TEXT("PostProcessComponent")); //Create blinkers comoponent
 	PostProcessComponent->SetupAttachment(GetRootComponent());	//attach componenet to the VRRoot
 
 }
