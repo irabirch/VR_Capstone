@@ -19,6 +19,10 @@ public:
 	AHandController();
 
 	void SetHand(EControllerHand Hand) { MotionController->SetTrackingSource(Hand); }
+	void PairController(AHandController* Controller);
+
+	void Grip();
+	void Release();
 
 protected:
 	// Called when the game starts or when spawned
@@ -49,5 +53,8 @@ private:
 
 	// State
 	bool bCanClimb = false;
+	bool bIsClimbing = false;
+	FVector ClimbingStartLocation;
 
+	AHandController* OtherController;
 };

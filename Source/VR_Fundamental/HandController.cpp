@@ -3,6 +3,8 @@
 #include "HandController.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AHandController::AHandController()
@@ -28,6 +30,12 @@ void AHandController::BeginPlay()
 void AHandController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (bIsClimbing) {
+		FVector HandControllerDelta = GetActorLocation() - ClimbingStartLocation;
+
+		GetAttachParentActor()->AddActorWorldOffset(-HandControllerDelta);
+	}
 
 }
 
@@ -67,4 +75,38 @@ bool AHandController::CanClimb() const
 	}
 	return false;
 
+}
+
+void AHandController::Grip() {
+	if (!bCanClimb) return;
+
+	if (!bIsClimbing) {
+		bIsClimbing = true;
+		ClimbingStartLocation = GetActorLocation();
+
+		OtherController->bIsClimbing = false;
+
+		ACharacter* Character = Cast<ACharacter>(GetAttachParentActor());
+		if (Character != nullptr) {
+			Character->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+
+		}
+	}
+}
+
+void AHandController::Release() {
+	if (bIsClimbing) {
+		bIsClimbing = false;
+		ACharacter* Character = Cast<ACharacter>(GetAttachParentActor());
+		if (Character != nullptr) {
+			Character->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
+		}
+	}
+}
+
+// Controllers face each other
+void AHandController::PairController(AHandController* Controller)
+{
+	OtherController = Controller;
+	OtherController->OtherController = this;
 }
