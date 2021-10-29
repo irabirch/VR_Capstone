@@ -29,8 +29,25 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
+	// Callbacks
+	UFUNCTION()
+	void ActorBeginOverlap(AActor* OverlappedActor, AActor* OtherActor);
+	UFUNCTION()
+	void ActorEndOverlap(AActor* OverlappedActor, AActor* OtherActor);
+
+
+	// Helpers
+	bool CanClimb() const;
+
 	//Default Sub Object
 	UPROPERTY(VisibleAnywhere)
-	UMotionControllerComponent* MotionController;
+		UMotionControllerComponent* MotionController;
+
+	//Parameters
+	UPROPERTY(EditDefaultsOnly)
+		class UHapticFeedbackEffect_Base* HapticEffect;
+
+	// State
+	bool bCanClimb = false;
 
 };
