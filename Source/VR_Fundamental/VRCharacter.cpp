@@ -12,7 +12,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/SplineComponent.h"	//Need this for spline component for TeleportPath
 #include "Components/SplineMeshComponent.h" //Need this for spline meshes
-#include "HandController.h"
 
 // Sets default values
 AVRCharacter::AVRCharacter()
@@ -65,6 +64,7 @@ void AVRCharacter::BeginPlay()
 	}
 
 	LeftController->PairController(RightController);	//Let controllers know about each other
+
 }
 
 // Called every frame
@@ -79,6 +79,32 @@ void AVRCharacter::Tick(float DeltaTime)
 
 	UpdateDestinationMarker();	//Call Update Dest Mark every tick
 	UpdateBlinkers();	//Call update blinkers every tick
+}
+
+// Called to bind functionality to input
+void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	PlayerInputComponent->BindAxis(TEXT("Forward"), this, &AVRCharacter::MoveForward);
+	PlayerInputComponent->BindAxis(TEXT("Right"), this, &AVRCharacter::MoveRight);
+	PlayerInputComponent->BindAction(TEXT("Teleport"), IE_Released, this, &AVRCharacter::BeginTeleport);
+	PlayerInputComponent->BindAction(TEXT("GripLeft"), IE_Pressed, this, &AVRCharacter::GripLeft);
+	PlayerInputComponent->BindAction(TEXT("GripLeft"), IE_Released, this, &AVRCharacter::ReleaseLeft);
+	PlayerInputComponent->BindAction(TEXT("GripRight"), IE_Pressed, this, &AVRCharacter::GripRight);
+	PlayerInputComponent->BindAction(TEXT("GripRight"), IE_Released, this, &AVRCharacter::ReleaseRight);
+
+	PlayerInputComponent->BindAction(TEXT("StrokeAButton"), EInputEvent::IE_Pressed, this, &AVRCharacter::RightAButtonPressed);
+	PlayerInputComponent->BindAction(TEXT("StrokeAButton"), EInputEvent::IE_Released, this, &AVRCharacter::RightAButtonReleased);
+}
+
+void AVRCharacter::MoveForward(float throttle)
+{
+	AddMovementInput(throttle * Camera->GetForwardVector());
+}
+void AVRCharacter::MoveRight(float throttle)
+{
+	AddMovementInput(throttle * Camera->GetRightVector());
 }
 
 //Detects if LineTrace is successful && ProjectPointToNavigation is successful, Then returns true
@@ -108,6 +134,8 @@ bool AVRCharacter::FindTeleportDestination(TArray<FVector>& OutPath, FVector& Ou
 
 	FNavLocation NavLocation;
 	bool bOnNavMesh = UNavigationSystemV1::GetNavigationSystem(GetWorld())->ProjectPointToNavigation(Result.HitResult.Location, NavLocation, TeleportProjectionExtent);
+
+	if (!bOnNavMesh) return false;
 
 	OutLocation = NavLocation.Location;
 
@@ -224,28 +252,6 @@ FVector2D AVRCharacter::GetBlinkerCentre()
 	ScreenStationaryLocaiton.Y /= SizeY;
 
 	return ScreenStationaryLocaiton;
-}
-
-// Called to bind functionality to input
-void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	PlayerInputComponent->BindAxis(TEXT("Forward"), this, &AVRCharacter::MoveForward);
-	PlayerInputComponent->BindAxis(TEXT("Right"), this, &AVRCharacter::MoveRight);
-	PlayerInputComponent->BindAction(TEXT("Teleport"),IE_Released, this, &AVRCharacter::BeginTeleport);
-	PlayerInputComponent->BindAction(TEXT("GripLeft"), IE_Pressed, this, &AVRCharacter::GripLeft);
-	PlayerInputComponent->BindAction(TEXT("GripLeft"), IE_Released, this, &AVRCharacter::ReleaseLeft);
-	PlayerInputComponent->BindAction(TEXT("GripRight"), IE_Pressed, this, &AVRCharacter::GripRight);
-	PlayerInputComponent->BindAction(TEXT("GripRight"), IE_Released, this, &AVRCharacter::ReleaseRight);
-}
-void AVRCharacter::MoveForward(float throttle) 
-{
-	AddMovementInput(throttle * Camera->GetForwardVector());
-}
-void AVRCharacter::MoveRight(float throttle)
-{
-	AddMovementInput(throttle * Camera->GetRightVector());
 }
 
 void AVRCharacter::BeginTeleport()
