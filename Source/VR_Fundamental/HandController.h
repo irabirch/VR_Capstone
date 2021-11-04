@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "MotionControllerComponent.h"
-
+#include "Stroke.h"
 #include "HandController.generated.h"
 
 UCLASS()
@@ -20,6 +20,9 @@ public:
 
 	void SetHand(EControllerHand Hand) { MotionController->SetTrackingSource(Hand); }
 	void PairController(AHandController* Controller);
+
+	void AButtonPressed();
+	void AButtonReleased();
 
 	void Grip();
 	void Release();
@@ -39,6 +42,9 @@ private:
 	UFUNCTION()
 	void ActorEndOverlap(AActor* OverlappedActor, AActor* OtherActor);
 
+	// Config
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<AStroke> StrokeClass;
 
 	// Helpers
 	bool CanClimb() const;
@@ -55,6 +61,7 @@ private:
 	bool bCanClimb = false;
 	bool bIsClimbing = false;
 	FVector ClimbingStartLocation;
+	AStroke* CurrentStroke;
 
 	AHandController* OtherController;
 };

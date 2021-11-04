@@ -19,37 +19,44 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	//virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-private:									//Function for componenets Instantiation
-	bool FindTeleportDestination(TArray<FVector> &OutPath, FVector &OutLocation);
-	void UpdateDestinationMarker();
+private:
+	//functions for moving and blinkers
 	void UpdateBlinkers();
-	void DrawTeleportPath(const TArray<FVector>& Path);
-	void UpdateSpline(const TArray<FVector>& Path);	//make const so don't have to make copies of objects
-	FVector2D GetBlinkerCentre();
-
 	void MoveForward(float throttle);
 	void MoveRight(float throttle);
+	FVector2D GetBlinkerCentre();
 
+	//Teleport functions
+	void UpdateDestinationMarker();
+	void BeginTeleport();
+	void FinishTeleport();
+	void StartFade(float FromAlpha, float ToAlpha);
+
+	//Teleport Path Mesh, arc parabola
+	bool FindTeleportDestination(TArray<FVector>& OutPath, FVector& OutLocation);
+	void DrawTeleportPath(const TArray<FVector>& Path);
+	void UpdateSpline(const TArray<FVector>& Path);	//make const so don't have to make copies of object
+
+	//Climbing Functions
 	void GripLeft() { LeftController->Grip();}
 	void ReleaseLeft() { LeftController->Release(); }
 	void GripRight() { RightController->Grip(); }
 	void ReleaseRight() { RightController->Release(); }
 
-	void BeginTeleport();
-	void FinishTeleport();
+	//Painting in VR
+	void RightAButtonPressed() { if (RightController) RightController->AButtonPressed(); }
+	void RightAButtonReleased() { if (RightController) RightController->AButtonReleased(); }
 
-	void StartFade(float FromAlpha, float ToAlpha);
-
-
-
+	
 private:	//Component Instantiations
 	UPROPERTY(VisibleAnywhere)
 		class UCameraComponent* Camera;

@@ -37,6 +37,21 @@ void AHandController::Tick(float DeltaTime)
 		GetAttachParentActor()->AddActorWorldOffset(-HandControllerDelta);
 	}
 
+	if (CurrentStroke) {
+		CurrentStroke->Update(GetActorLocation());
+	}
+
+}
+
+//AHandController AButton Functions for Stroke Drawing
+void AHandController::AButtonPressed()
+{
+	CurrentStroke = GetWorld()->SpawnActor<AStroke>(StrokeClass);
+	CurrentStroke->SetActorLocation(GetActorLocation());
+}
+void AHandController::AButtonReleased()
+{
+	CurrentStroke = nullptr; //this just tells us that we are no longer drawing
 }
 
 void AHandController::ActorBeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
@@ -110,3 +125,4 @@ void AHandController::PairController(AHandController* Controller)
 	OtherController = Controller;
 	OtherController->OtherController = this;
 }
+
