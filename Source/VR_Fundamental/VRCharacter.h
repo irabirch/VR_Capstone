@@ -56,6 +56,10 @@ private:
 	void RightAButtonPressed() { if (RightController) RightController->AButtonPressed(); }
 	void RightAButtonReleased() { if (RightController) RightController->AButtonReleased(); }
 
+	//Saving Loading in VR
+	void Save();
+	void Load();
+
 	
 private:	//Component Instantiations
 	UPROPERTY(VisibleAnywhere)

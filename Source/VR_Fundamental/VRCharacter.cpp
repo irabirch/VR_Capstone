@@ -12,6 +12,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/SplineComponent.h"	//Need this for spline component for TeleportPath
 #include "Components/SplineMeshComponent.h" //Need this for spline meshes
+#include "Saving/FundamentalSaveGame.h"
 
 // Sets default values
 AVRCharacter::AVRCharacter()
@@ -34,6 +35,8 @@ AVRCharacter::AVRCharacter()
 
 	PostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(TEXT("PostProcessComponent")); //Create blinkers comoponent
 	PostProcessComponent->SetupAttachment(GetRootComponent());	//attach componenet to the VRRoot
+
+
 
 }
 
@@ -64,7 +67,6 @@ void AVRCharacter::BeginPlay()
 	}
 
 	LeftController->PairController(RightController);	//Let controllers know about each other
-
 }
 
 // Called every frame
@@ -86,16 +88,23 @@ void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	//Movement Inputs
 	PlayerInputComponent->BindAxis(TEXT("Forward"), this, &AVRCharacter::MoveForward);
 	PlayerInputComponent->BindAxis(TEXT("Right"), this, &AVRCharacter::MoveRight);
+	//Teleport Inputs
 	PlayerInputComponent->BindAction(TEXT("Teleport"), IE_Released, this, &AVRCharacter::BeginTeleport);
+	//Climbing Inputs
 	PlayerInputComponent->BindAction(TEXT("GripLeft"), IE_Pressed, this, &AVRCharacter::GripLeft);
 	PlayerInputComponent->BindAction(TEXT("GripLeft"), IE_Released, this, &AVRCharacter::ReleaseLeft);
 	PlayerInputComponent->BindAction(TEXT("GripRight"), IE_Pressed, this, &AVRCharacter::GripRight);
 	PlayerInputComponent->BindAction(TEXT("GripRight"), IE_Released, this, &AVRCharacter::ReleaseRight);
-
+	//Drawing VR Inputs
 	PlayerInputComponent->BindAction(TEXT("StrokeAButton"), EInputEvent::IE_Pressed, this, &AVRCharacter::RightAButtonPressed);
 	PlayerInputComponent->BindAction(TEXT("StrokeAButton"), EInputEvent::IE_Released, this, &AVRCharacter::RightAButtonReleased);
+	//Saving Loading Inputs
+	PlayerInputComponent->BindAction(TEXT("Save"), EInputEvent::IE_Released, this, &AVRCharacter::Save);
+	PlayerInputComponent->BindAction(TEXT("Load"), EInputEvent::IE_Released, this, &AVRCharacter::Load);
+
 }
 
 void AVRCharacter::MoveForward(float throttle)
@@ -276,5 +285,25 @@ void AVRCharacter::StartFade(float FromAlpha, float ToAlpha)
 	if (PC != nullptr)
 	{
 		PC->PlayerCameraManager->StartCameraFade(FromAlpha, ToAlpha, TeleportFadeTime, FLinearColor::Black);
+	}
+}
+
+void AVRCharacter::Save()
+{
+	UFundamentalSaveGame* Fundamental = UFundamentalSaveGame::Create();
+	Fundamental->SetState("Hello World");
+	Fundamental->SerializeFromWorld(GetWorld());
+	Fundamental->Save();
+}
+
+void AVRCharacter::Load()
+{
+	UFundamentalSaveGame* Fundamental = UFundamentalSaveGame::Load();
+	if (Fundamental) {
+		Fundamental->DeserializeToWorld(GetWorld());
+		UE_LOG(LogTemp, Warning, TEXT("Painting State %s"), *Fundamental->GetState());
+	}
+	else {
+		UE_LOG(LogTemp, Warning, TEXT("Not Found"));
 	}
 }
